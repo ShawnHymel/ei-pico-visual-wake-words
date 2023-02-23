@@ -1,0 +1,2 @@
+# PIO files require unix-style LF line endings
+*.pio -text
