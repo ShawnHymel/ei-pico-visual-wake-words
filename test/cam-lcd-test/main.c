@@ -1,3 +1,16 @@
+/**
+ * From: https://github.com/ArduCAM/RPI-Pico-Cam/tree/master/rp2040_hm01b0_st7735
+ * 
+ * Inference: looking for 96x96 RGB images as input
+ * 
+ * TODO:
+ *  - Print out image buffer to verify image format
+ *  - Capture/scale 96x96 RGB
+ */
+
+// 
+// 
+
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include <tusb.h>
@@ -5,6 +18,7 @@
 #include "arducam/arducam.h"
 #include "lib/st7735.h"
 #include "lib/fonts.h"
+
 uint8_t image_buf[324*324];
 uint8_t displayBuf[80*160*2];
 uint8_t header[2] = {0x55,0xAA};
@@ -12,14 +26,14 @@ uint8_t header[2] = {0x55,0xAA};
 #define FLAG_VALUE 123
 
 void core1_entry() {
-        multicore_fifo_push_blocking(FLAG_VALUE);
+	multicore_fifo_push_blocking(FLAG_VALUE);
 
-        uint32_t g = multicore_fifo_pop_blocking();
+	uint32_t g = multicore_fifo_pop_blocking();
 
-        if (g != FLAG_VALUE)
-          printf("Hmm, that's not right on core 1!\n");
-        else
-          printf("It's all gone well on core 1!\n");
+	if (g != FLAG_VALUE)
+		printf("Hmm, that's not right on core 1!\n");
+	else
+		printf("It's all gone well on core 1!\n");
 
 	gpio_init(PIN_LED);
 	gpio_set_dir(PIN_LED, GPIO_OUT);
