@@ -16,18 +16,18 @@ pico_sdk_init()
 
 # Main executable
 add_executable(app
-	source/main.cpp
 	source/arducam/arducam.c
+	source/main.cpp
 )
 
 # Add Edge Impulse SDK (recursive CMakeLists.txt)
 add_subdirectory(source/edge-impulse)
 
-# Add arducam library
-target_include_directories(app
-	PUBLIC
-	source/arducam
-)
+# # Add arducam library
+# target_include_directories(app
+# 	PUBLIC
+# 	source/arducam
+# )
 
 # Generate PIO header
 pico_generate_pio_header(app 

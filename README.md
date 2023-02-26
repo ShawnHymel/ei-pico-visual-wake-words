@@ -1,10 +1,14 @@
 # Person Detection on Arducam Pico4ML
 
-Runs exported Edge Impulse C++ library on RP2040-based Pico4ML board. 
+Runs exported Edge Impulse C++ library on RP2040-based Pico4ML board. See the documentation at [Running your impulse locally](https://docs.edgeimpulse.com/docs/running-your-impulse-locally-1). This repository is based off of the [Arducam Pico4ML Magic Wand Example](https://github.com/ArduCAM/Pico4ML-Magic-Wand/).
+
+## Requirements
 
 # Edge Impulse Example: stand-alone inferencing (Raspberry Pi Pico)
 
-This repository runs an exported impulse on the Raspberry Pi Pico / RP2040. See the documentation at [Running your impulse locally](https://docs.edgeimpulse.com/docs/running-your-impulse-locally-1). This repository is based off of the [Arducam Pico4ML Magic Wand Example](https://github.com/ArduCAM/Pico4ML-Magic-Wand/).
+
+
+This repository runs an exported impulse on the Raspberry Pi Pico / RP2040. 
 
 ## Requirements
 

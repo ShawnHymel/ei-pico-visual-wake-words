@@ -16,8 +16,8 @@
 #include <tusb.h>
 #include "pico/multicore.h"
 #include "arducam/arducam.h"
-#include "lib/st7735.h"
-#include "lib/fonts.h"
+#include "lcd/st7735.h"
+#include "lcd/fonts.h"
 
 uint8_t image_buf[324*324];
 uint8_t displayBuf[80*160*2];

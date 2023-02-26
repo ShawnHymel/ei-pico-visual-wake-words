@@ -4,13 +4,13 @@ cmake_minimum_required(VERSION 3.12)
 # Pull in PICO SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-project(rp2040_arducam)
+project(rp2040_arducam C CXX ASM)
 
 pico_sdk_init()
 
 add_executable(arducam_firmware
 	source/arducam/arducam.c
-	source/main.c
+	source/main.cpp
 	source/lcd/st7735.c
 	source/lcd/fonts.c
 	source/lcd/DEV_Config.c
