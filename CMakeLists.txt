@@ -11,12 +11,39 @@ set(CMAKE_CXX_STANDARD 11)
 
 pico_sdk_init()
 
-add_executable(app
-  source/main.cpp
-  )
+# TODO: undefined reference in main to arducam functions
+# CMake not linking/including them properly?
 
-add_subdirectory(source)
-target_link_libraries(app pico_stdlib)
+# Main executable
+add_executable(app
+	source/main.cpp
+	source/arducam/arducam.c
+)
+
+# Add Edge Impulse SDK (recursive CMakeLists.txt)
+add_subdirectory(source/edge-impulse)
+
+# Add arducam library
+target_include_directories(app
+	PUBLIC
+	source/arducam
+)
+
+# Generate PIO header
+pico_generate_pio_header(app 
+	${CMAKE_CURRENT_LIST_DIR}/source/arducam/image.pio
+)
+
+# Link to libraries
+target_link_libraries(app
+	pico_stdlib
+	hardware_dma
+	hardware_i2c
+	hardware_pio
+	hardware_pwm
+	hardware_spi
+	pico_multicore
+)
 
 # enable usb output, disable uart output
 pico_enable_stdio_usb(app 1)
