@@ -2,70 +2,48 @@
 
 Runs exported Edge Impulse C++ library on RP2040-based Pico4ML board. See the documentation at [Running your impulse locally](https://docs.edgeimpulse.com/docs/running-your-impulse-locally-1). This repository is based off of the [Arducam Pico4ML Magic Wand Example](https://github.com/ArduCAM/Pico4ML-Magic-Wand/).
 
-## Requirements
+Note that the code in the *test/* folder are standalone projects for prototyping. They are not used in this program.
 
-# Edge Impulse Example: stand-alone inferencing (Raspberry Pi Pico)
+## TODO
 
+Note that the LCD does not work at this time, so it is commented out (through a #define in *source/main.cpp*). I don't think I'm filling the buffer or calling `ST7735_DrawImage()` correctly, so this is something to dig into. I just don't have the time right now, and it's ultimately for debugging (as there's no LCD on the custom person detection board).
 
-
-This repository runs an exported impulse on the Raspberry Pi Pico / RP2040. 
+Also, you may want to look at optimizing the program for dual-core operation. For example, have the image capture and resize process run on one core, send the data in a FIFO to the second core, which just runs inference.
 
 ## Requirements
 
 ### Hardware
 
-* [Raspberry Pi Pico](https://www.raspberrypi.org/products/raspberry-pi-pico/).
+* [Arducam Pico4ML Board](https://www.arducam.com/pico4ml-an-rp2040-based-platform-for-tiny-machine-learning/)
 
 ### Software
 
-* [Edge Impulse CLI](https://docs.edgeimpulse.com/docs/cli-installation).
-* [GNU ARM Embedded Toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads).
-* [CMake](https://cmake.org/install/).
-* Rasperry Pi Pico SDK:
-   ```bash
-   git clone -b master https://github.com/raspberrypi/pico-sdk.git
-   cd pico-sdk
-   git submodule update --init
-   export PATH="<Path to Pico SDK>:$PATH"
-   ```
+* Raspberry Pi Pico SDK [Install instructions](https://github.com/pimoroni/pimoroni-pico/blob/main/setting-up-the-pico-sdk.md)
+* Make sure that the environment variable `PICO_SDK_PATH` is set to the location of the Pico SDK on your computer
 
-## Building the application
+## Build Application
 
-### Get the Edge Impulse SDK
+Download the *C++ SDK library* from Edge Impulse. Unzip it into *source/edge-impulse* (replace any files/folders). From the top-level directory of this repository, call the following:
 
-Unzip the deployed `C++ library` from your Edge Impulse project and copy to the source directory of this repository:
+```bash
+mkdir build
+cd build
+cmake ..
+make -j4
+```
 
-   ```
-   example-standalone-inferencing-pico/
-   ├─ source
-   ├─- model-parameters
-   ├─- edge-impulse-sdk
-   ├─- tflite-model
-   ├─- CMakeLists.txt
-   ├─ .gitignore
-   ├─ LICENSE
-   ├─ README.md
-   └─ pico_sdk_import.cmake
-   ```
+Put the Raspberry Pi Pico into [bootloader mode](https://helloraspberrypi.blogspot.com/2021/02/raspberry-pi-pico-enter-bootloader-mode.html). Copy the *app.uf2* file from *build/* to the Raspberry Pi Pico drive.
 
-### Compile
+Connect to the Pico with a serial program (e.g. PuTTY, screen) with: 115200 baud, 8N1. You should see inference results being written over the serial connection.
 
-1. Create the `build` folder:
-   ```bash
-   mkdir build && cd build
-   ```
-1. Compile:
-   ```bash
-   cmake ..
-   clear && make -j4
-   ```
+## License
 
-### Flash
+Unless otherwise specified, code in this repository is licensed under the APACHE 2.0 open source license.
 
-Connect the Raspberry Pi Pico to your computer using a micro-USB cable while pressing and holding the **BOOTSEL** button.
+Copyright 2023 EdgeImpulse, Inc.
 
-Drag and drop the `build/pico_standalone.uf2` file to the **RPI-RP2** disk in your file explorer.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
-### Serial connection
+http://www.apache.org/licenses/LICENSE-2.0
 
-Use screen, minicom or Serial monitor in Arduino IDE to set up a serial connection over USB. The following UART settings are used: 115200 baud, 8N1.
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

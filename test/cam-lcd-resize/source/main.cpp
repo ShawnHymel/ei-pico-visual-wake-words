@@ -4,15 +4,25 @@
 #include <pico/stdio_usb.h>
 #include <stdio.h>
 
+// Edge Impulse SDK
+#include "edge-impulse/edge-impulse-sdk/classifier/ei_run_classifier.h"
+#include "edge-impulse/edge-impulse-sdk/dsp/image/image.hpp"
+
+// Debug settings
+#define LED_DEBUG
+#define ENABLE_LCD
+
 // Arducam camera library
 #include "arducam/arducam.h"
 
-// // Edge Impulse SDK
-// #include "edge-impulse/edge-impulse-sdk/classifier/ei_run_classifier.h"
-// #include "edge-impulse/edge-impulse-sdk/dsp/image/image.hpp"
+// Arducam LCD libraries
+#ifdef ENABLE_LCD
+# include "lcd/st7735.h"
+# include "lcd/fonts.h"
+#endif
 
 // Give access to the DSP functions in the Edge Impulse SDK
-// using namespace ei::image::processing;
+using namespace ei::image::processing;
 
 // Settings
 const uint LED_PIN = 25;
@@ -20,22 +30,25 @@ const int CAM_WIDTH = 324;
 const int CAM_HEIGHT = 324;
 const int IMG_WIDTH = 96;
 const int IMG_HEIGHT = 96;
-
-// // Edge Impulse callback to fill inference buffer
-// int raw_feature_get_data(size_t offset, size_t length, float *out_ptr)
-// {
-//   memcpy(out_ptr, features + offset, length * sizeof(float));
-//   return 0;
-// }
+#ifdef ENABLE_LCD
+const int LCD_WIDTH = 80;
+const int LCD_HEIGHT = 80;
+#endif
 
 // Globals
 static uint8_t image_buf[CAM_WIDTH * CAM_HEIGHT];
 
 int main()
 {
+#ifdef ENABLE_LCD
+  uint8_t display_buf[LCD_WIDTH * LCD_HEIGHT * 2];
+#endif
+
   // Init LED
+#ifdef LED_DEBUG
   gpio_init(LED_PIN);
   gpio_set_dir(LED_PIN, GPIO_OUT);
+#endif
 
   // Init USB (for printing)
   stdio_usb_init();
@@ -60,37 +73,68 @@ int main()
   // Init camera
 	arducam_init(&config);
 
-  // ***TEST***
+  // Init LCD
+#ifdef ENABLE_LCD
+  ST7735_Init();
+  ST7735_DrawImage(0, 0, 80, 160, arducam_logo);
   sleep_ms(2000);
+#endif
 
-  // Capture image
-  gpio_put(PIN_LED, 1);
-  arducam_capture_frame(&config);
-
-  // Resize image (in place) using built-in EI function (bilinear interpolation)
-  // resize_image(image_buf, 
-  //               CAM_WIDTH, 
-  //               CAM_HEIGHT, 
-  //               image_buf, 
-  //               IMG_WIDTH, 
-  //               IMG_HEIGHT, 
-  //               MONO_B_SIZE);
-
-  // Print buffer
-  for (uint32_t i = 0; i < (IMG_WIDTH * IMG_HEIGHT); i++)
+  // Main loop
+  while (1)
   {
-    printf("%i", image_buf[i]);
-    if (i < config.image_buf_size - 1)
+    // Capture image
+#ifdef LED_DEBUG
+    gpio_put(PIN_LED, 1);
+#endif
+    arducam_capture_frame(&config);
+
+    // Resize image (in place) using built-in EI function (bilinear interpolation)
+    resize_image(image_buf, 
+                  CAM_WIDTH, 
+                  CAM_HEIGHT, 
+                  image_buf, 
+                  IMG_WIDTH, 
+                  IMG_HEIGHT, 
+                  MONO_B_SIZE);
+    // Turn off LED (to show that image capture is done)
+#ifdef LED_DEBUG
+    gpio_put(PIN_LED, 0);
+#endif
+
+    // ***TODO: Do inference BEFORE displaying to LCD!***
+
+    // Display image on LCD
+#ifdef ENABLE_LCD
+
+    // Resize image to fit in LCD
+    resize_image(image_buf, 
+                  IMG_WIDTH, 
+                  IMG_HEIGHT, 
+                  image_buf, 
+                  LCD_WIDTH, 
+                  LCD_HEIGHT, 
+                  MONO_B_SIZE);
+
+    // Convert image to RGB565
+    uint16_t ix = 0;
+    uint8_t pixel_gray;
+    uint16_t pixel_rgb565;
+    for (int y = 0; y < CAM_HEIGHT; y++)
     {
-      printf(", ");
+      for (int x = 0; x < CAM_WIDTH; x++)
+      {
+        pixel_gray = image_buf[(y * CAM_WIDTH) + x];
+        pixel_rgb565 = ST7735_COLOR565(pixel_gray, pixel_gray, pixel_gray);
+        display_buf[ix++] = (uint8_t)(pixel_rgb565 >> 8) & 0xFF;
+        display_buf[ix++] = (uint8_t)(pixel_rgb565) & 0xFF;
+      }
     }
+
+    // Display on LCD
+    ST7735_DrawImage(0, 0, 80, 160, display_buf);
+#endif // ENABLE_LCD
   }
-  printf("\r\n");
-
-  // Turn off LED (to show that image capture is done)
-  gpio_put(PIN_LED, 0);
-
-  while(1);
 
 //   ei_impulse_result_t result = {nullptr};
 //   while (true)
